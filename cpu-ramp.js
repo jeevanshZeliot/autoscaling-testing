@@ -1,26 +1,24 @@
-let loopCount = 1;
-
-function burnCpu(iterations) {
-  console.log(`\n🔥 Running burnCpu with ${iterations} iterations`);
-  const start = Date.now();
-
-  for (let i = 0; i < iterations; i++) {
-    Math.sqrt(Math.random());
+const http = require("http");
+ 
+const port = process.env.PORT || 3000;
+ 
+const simulateCPULoad = (duration = 5000) => {
+  const end = Date.now() + duration;
+  while (Date.now() < end) {
+    // Simulate blocking CPU (no-op)
+    Math.sqrt(Math.random() * Math.random());
   }
-
-  const duration = (Date.now() - start) / 1000;
-  console.log(
-    `✅ Completed ${iterations} iterations in ${duration.toFixed(2)} seconds`
-  );
-}
-
-function startCpuRamp() {
-  setInterval(() => {
-    const iterations = loopCount * 10_000_000;
-    burnCpu(iterations);
-    loopCount++;
-  }, 3 * 60 * 1000); // Every 5 minutes
-}
-
-console.log("🚀 Starting CPU ramp simulation...");
-startCpuRamp();
+};
+ 
+const requestHandler = (req, res) => {
+  if (req.url === "/load") {
+    simulateCPULoad(); // Simulate CPU load for 5s
+    res.end("CPU load simulated");
+  } else {
+    res.end("Hello from Node.js");
+  }
+};
+ 
+http.createServer(requestHandler).listen(port, () => {
+  console.log(`Server running at http://localhost:${port}`);
+});
