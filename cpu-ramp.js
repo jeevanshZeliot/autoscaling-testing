@@ -2,7 +2,7 @@ const http = require("http");
  
 const port = process.env.PORT || 3000;
  
-const simulateCPULoad = (duration = 5000) => {
+const simulateCPULoad = (duration = 20000) => {
   const end = Date.now() + duration;
   while (Date.now() < end) {
     // Simulate blocking CPU (no-op)
