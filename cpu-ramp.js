@@ -1,47 +1,117 @@
 const http = require("http");
+
 const { Worker } = require("worker_threads");
  
 const port = process.env.PORT || 3000;
  
-let memoryHog = []; // Holds allocated memory
+let memoryHog = []; // Global array to hold allocated memory
+
+let isMemoryLoading = false;
  
-// ⚡ Modify CPU Load Function Here
+// 🧠 CPU Load Worker Thread
+
 const cpuLoadFunction = `
-  const end = Date.now() + 5000;
+
+  const end = Date.now() + 60000; // Run for 60 seconds
+
   while (Date.now() < end) {
+
     const x = Math.random() * 100;
-    const result = x * x * x; // Cube operation
+
+    const result = x * x * x * x * x; // Heavier math
+
   }
+
 `;
  
-// 🔥 CPU Load: Multithreaded
-const simulateCPULoad = (threads = 4) => {
+// 🔥 Start CPU Load with N threads
+
+const simulateCPULoad = (threads = 8) => {
+
   for (let i = 0; i < threads; i++) {
+
     new Worker(cpuLoadFunction, { eval: true });
+
   }
+
+  console.log(`Started ${threads} CPU load threads.`);
+
 };
  
-// 🔥 Memory Load: Allocate and retain memory
-const simulateMemoryLoad = (chunks = 10, sizeMB = 50) => {
-  for (let i = 0; i < chunks; i++) {
-    const buffer = Buffer.alloc(sizeMB * 1024 * 1024); // Allocate sizeMB per chunk
-    memoryHog.push(buffer); // Prevent garbage collection
-  }
+// 💾 Start sustained memory allocation (~50MB/sec)
+
+const simulateMemoryLoad = (mbPerStep = 50, steps = 60, interval = 1000) => {
+
+  if (isMemoryLoading) return;
+
+  isMemoryLoading = true;
+ 
+  let count = 0;
+
+  const loader = setInterval(() => {
+
+    const buf = Buffer.alloc(mbPerStep * 1024 * 1024); // Allocate memory
+
+    memoryHog.push(buf);
+
+    count++;
+
+    console.log(`Allocated ${count * mbPerStep} MB`);
+ 
+    if (count >= steps) {
+
+      clearInterval(loader);
+
+      console.log("Memory load complete.");
+
+      isMemoryLoading = false;
+
+    }
+
+  }, interval);
+
+};
+ 
+// 🧹 Clear Memory
+
+const resetMemory = () => {
+
+  memoryHog = [];
+
+  global.gc?.(); // If node started with --expose-gc
+
+  console.log("Memory cleared.");
+
 };
  
 const requestHandler = (req, res) => {
+
   if (req.url === "/load") {
-    simulateCPULoad(4);       // Spike CPU
-    simulateMemoryLoad(4, 50); // Allocate 4 × 50MB = 200MB
-    res.end("CPU and RAM load simulated\n");
+
+    simulateCPULoad(8);              // Stress 8 threads (cores)
+
+    simulateMemoryLoad(50, 60, 1000); // Allocate 3GB in 60 seconds
+
+    res.end("Started CPU + RAM load.\n");
+
   } else if (req.url === "/reset") {
-    memoryHog = []; // Free up memory
-    res.end("Memory cleared\n");
+
+    resetMemory();
+
+    res.end("Memory cleared.\n");
+
   } else {
+
     res.end("Hello from Node.js\n");
+
   }
+
 };
  
 http.createServer(requestHandler).listen(port, () => {
+
   console.log(`🚀 Server running at http://localhost:${port}`);
+
 });
+
+ 
