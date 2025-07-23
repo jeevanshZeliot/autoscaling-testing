@@ -1,24 +1,25 @@
-const http = require("http");
+// cpu-loader.js
+
+const { Worker } = require("worker_threads");
+
+const os = require("os");
  
-const port = process.env.PORT || 3000;
+const numThreads = parseInt(process.env.THREADS) || os.cpus().length;
  
-const simulateCPULoad = (duration = 20000) => {
-  const end = Date.now() + duration;
-  while (Date.now() < end) {
-    // Simulate blocking CPU (no-op)
-    Math.sqrt(Math.random() * Math.random());
-  }
-};
+console.log(`Starting ${numThreads} workers...`);
+
+for (let i = 0; i < numThreads; i++) {
+
+  new Worker(`
+
+    while (true) {
+
+      Math.sqrt(Math.random() * Math.random());
+
+    }
+
+  `, { eval: true });
+
+}
+
  
-const requestHandler = (req, res) => {
-  if (req.url === "/load") {
-    simulateCPULoad(); // Simulate CPU load for 5s
-    res.end("CPU load simulated");
-  } else {
-    res.end("Hello from Node.js");
-  }
-};
- 
-http.createServer(requestHandler).listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
-});
