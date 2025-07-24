@@ -26,7 +26,7 @@ for (let i = 0; i < numThreads; i++) {
 }
 
 // Keep process alive with a simple HTTP server
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8000;
 
 http
   .createServer((req, res) => {
