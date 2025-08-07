@@ -1,11 +1,15 @@
-# Use lightweight Node.js base image
-FROM node:18-alpine
+# Dockerfile
+FROM node:18
 
 # Set working directory
 WORKDIR /app
 
-# Copy the CPU ramp script
-COPY cpu-ramp.js .
+# Copy package files and install dependencies
+COPY package*.json ./
+RUN npm install
 
-# Run the script
-CMD ["node", "cpu-ramp.js"]
+# Copy source code
+COPY . .
+
+# Run the app
+CMD ["npm", "start"]

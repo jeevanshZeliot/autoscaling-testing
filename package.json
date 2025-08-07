@@ -1,0 +1,23 @@
+{
+  "name": "autoscale-testing",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jeevanshZeliot/autoscaling-testing.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jeevanshZeliot/autoscaling-testing/issues"
+  },
+  "homepage": "https://github.com/jeevanshZeliot/autoscaling-testing#readme",
+  "dependencies": {
+    "kafkajs": "^2.2.4"
+  }
+}
