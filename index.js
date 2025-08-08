@@ -4,7 +4,7 @@ const { processData } = require("./processor");
 
 const kafka = new Kafka({
   clientId: "kafka-processor-app",
-  brokers: [process.env.KAFKA_BROKER || "localhost:9095"],
+  brokers: [process.env.KAFKA_BROKER || "my-cluster-kafka-bootstrap.kafka.svc:9095"],
 });
 
 const inputTopic = process.env.INPUT_TOPIC || "input_Topic";
