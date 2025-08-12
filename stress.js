@@ -1,4 +1,4 @@
-import { Worker } from 'worker_threads';
+const { Worker } = require('worker_threads');
 
 
 const workerInterval = process.env.WORKER_INTERVAL ? Number(process.env.WORKER_INTERVAL) : 10;
