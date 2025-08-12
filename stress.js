@@ -1,6 +1,6 @@
-const { Worker } = require('worker_threads');
+import { Worker } from 'worker_threads';
 
-// Get env variables
+
 const workerInterval = process.env.WORKER_INTERVAL ? Number(process.env.WORKER_INTERVAL) : 10;
 const runDuration = process.env.RUN_DURATION ? Number(process.env.RUN_DURATION) : Infinity;
 
