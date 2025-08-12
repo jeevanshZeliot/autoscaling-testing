@@ -1,53 +1,52 @@
-// index.js
-const { Kafka } = require("kafkajs");
-const { processData } = require("./processor");
+const { Worker } = require('worker_threads');
 
-const kafka = new Kafka({
-  clientId: "kafka-processor-app",
-  brokers: [process.env.KAFKA_BROKER || "my-cluster-kafka-bootstrap.kafka.svc:9095"],
-});
+// Get env variables
+const workerInterval = process.env.WORKER_INTERVAL ? Number(process.env.WORKER_INTERVAL) : 10;
+const runDuration = process.env.RUN_DURATION ? Number(process.env.RUN_DURATION) : Infinity;
 
-const inputTopic = process.env.INPUT_TOPIC || "input_Topic";
-const outputTopic = process.env.OUTPUT_TOPIC || "output_topic";
-const BATCH_SIZE = parseInt(process.env.BATCH_SIZE) || 5;
+let workers = [];
+let intervalHandle = null;
+let workerCount = 0;
 
-const consumer = kafka.consumer({ groupId: "processor-group" });
-const producer = kafka.producer();
-const messageBuffer = [];
+// Start a new CPU-stressing worker
+function startWorker(id) {
+  const worker = new Worker(`
+    while (true) {
+      Math.sqrt(Math.random()); // Simulate CPU work
+    }
+  `, { eval: true });
 
-async function run() {
-  await consumer.connect();
-  await producer.connect();
-
-  await consumer.subscribe({ topic: inputTopic, fromBeginning: true });
-
-  console.log(
-    `🚀 Listening to "${inputTopic}", batching ${BATCH_SIZE} messages...`
-  );
-
-  await consumer.run({
-    eachMessage: async ({ message }) => {
-      const rawValue = message.value.toString();
-      console.log(`[RECEIVED] ${rawValue}`);
-
-      const processed = processData(rawValue);
-      messageBuffer.push({ value: processed });
-
-      if (messageBuffer.length >= BATCH_SIZE) {
-        console.log(`[SENDING BATCH] → ${outputTopic}`);
-        await producer.send({
-          topic: outputTopic,
-          messages: [...messageBuffer],
-        });
-
-        console.log(`[SENT] ${messageBuffer.length} messages`);
-        messageBuffer.length = 0;
-      }
-    },
-  });
+  workers.push(worker);
+  console.log(`Started worker \${id} (Total: \${workers.length})`);
 }
 
-run().catch((err) => {
-  console.error("[ERROR]", err);
-  process.exit(1);
-});
+// Stop all workers
+function stopAllWorkers() {
+  console.log("Stopping all workers...");
+  for (const worker of workers) {
+    worker.terminate();
+  }
+  if (intervalHandle) clearInterval(intervalHandle);
+  console.log("All workers terminated.");
+}
+
+// Start the process
+console.log("Starting CPU stress test...");
+console.log("Worker interval (seconds):", workerInterval);
+console.log("Run duration (seconds):", runDuration === Infinity ? 'Infinite' : runDuration);
+
+// Start first worker immediately
+startWorker(++workerCount);
+
+// Schedule new workers every X seconds
+intervalHandle = setInterval(() => {
+  startWorker(++workerCount);
+}, workerInterval * 1000);
+
+// Stop everything if RUN_DURATION is set
+if (runDuration !== Infinity) {
+  setTimeout(() => {
+    stopAllWorkers();
+    process.exit(0); // Exit the script
+  }, runDuration * 1000);
+}

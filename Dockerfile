@@ -1,15 +1,11 @@
-# Dockerfile
-FROM node:18
+# Use a lightweight Node.js image
+FROM node:18-slim
 
 # Set working directory
 WORKDIR /app
 
-# Copy package files and install dependencies
-COPY package*.json ./
-RUN npm install
+# Copy script into the container
+COPY stress.js .
 
-# Copy source code
-COPY . .
-
-# Run the app
-CMD ["npm", "start"]
+# Run the stress test script
+CMD ["node", "stress.js"]
