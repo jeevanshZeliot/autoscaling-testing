@@ -14,7 +14,7 @@ const BATCH_SIZE = parseInt(process.env.BATCH_SIZE) || 5;
 const consumer = kafka.consumer({ groupId: "processor-group" });
 const producer = kafka.producer();
 const messageBuffer = [];
-
+console.log("hi");
 async function run() {
   await consumer.connect();
   await producer.connect();
